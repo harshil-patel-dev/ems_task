@@ -1,17 +1,21 @@
 import 'package:ems_task/core/utils/app_export.dart';
-import 'package:ems_task/features/employee_details/models/quickdate_model.dart';
+import 'package:ems_task/core/models/quickdate_model.dart';
 import 'package:ems_task/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class CustomDatePicker extends StatefulWidget {
-  final Function(DateTime) onDateSelected;
+  final Function(DateTime?) onDateSelected;
   final List<QuickDateOption>? quickDateOptions;
+  final DateTime? minDate;
+  final DateTime? maxDate;
 
   const CustomDatePicker({
     super.key,
     required this.onDateSelected,
     this.quickDateOptions,
+    this.minDate,
+    this.maxDate,
   });
 
   @override
@@ -19,23 +23,31 @@ class CustomDatePicker extends StatefulWidget {
 }
 
 class _CustomDatePickerState extends State<CustomDatePicker> {
-  DateTime _selectedDate = DateTime.now();
-  DateTime _currentMonth = DateTime.now();
+  late DateTime _selectedDate;
+  late DateTime _currentMonth;
 
   @override
   void initState() {
     super.initState();
 
-    // Set initially selected date if any option is selected
-    if (widget.quickDateOptions != null) {
-      for (var option in widget.quickDateOptions!) {
-        if (option.isSelected) {
-          _selectedDate = option.getDate();
-          _currentMonth = DateTime(_selectedDate.year, _selectedDate.month);
-          break;
-        }
-      }
+    _selectedDate = DateTime.now();
+
+    if (widget.minDate != null && _selectedDate.isBefore(widget.minDate!)) {
+      _selectedDate = widget.minDate!;
     }
+
+    _currentMonth = DateTime(_selectedDate.year, _selectedDate.month, 1);
+  }
+
+  // check if a date is selectable
+  bool _isDateSelectable(DateTime date) {
+    if (widget.minDate != null && date.isBefore(widget.minDate!)) {
+      return false;
+    }
+    if (widget.maxDate != null && date.isAfter(widget.maxDate!)) {
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -58,19 +70,25 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
             children: [
               IconButton(
                 padding: EdgeInsets.zero,
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_left_rounded,
                   size: 36,
-                  color: AppColors.grey,
+                  color:
+                      _isPreviousMonthNavigable()
+                          ? AppColors.grey
+                          : AppColors.greyLight,
                 ),
-                onPressed: () {
-                  setState(() {
-                    _currentMonth = DateTime(
-                      _currentMonth.year,
-                      _currentMonth.month - 1,
-                    );
-                  });
-                },
+                onPressed:
+                    _isPreviousMonthNavigable()
+                        ? () {
+                          setState(() {
+                            _currentMonth = DateTime(
+                              _currentMonth.year,
+                              _currentMonth.month - 1,
+                            );
+                          });
+                        }
+                        : null,
               ),
               Text(
                 DateFormat('MMMM yyyy').format(_currentMonth),
@@ -115,7 +133,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
           // Calendar grid
           _buildCalendarGrid(),
 
-          // Selected date display and save button
+          // Save and Cancel buttons
           Container(
             margin: const EdgeInsets.only(top: 16.0),
             padding: const EdgeInsets.only(top: 8),
@@ -155,7 +173,6 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     );
   }
 
-  // Build rows of quick date options with 2 options per row
   List<Widget> _buildQuickDateOptionsRows() {
     final List<Widget> rows = [];
     final options = widget.quickDateOptions!;
@@ -185,7 +202,25 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                                 ? ButtonType.primary
                                 : ButtonType.secondary,
                         text: option.text,
-                        onPressed: () => _selectQuickDate(option.getDate()),
+                        onPressed: () {
+                          if (option.isNoDate) {
+                            widget.onDateSelected(option.getDate());
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                          } else if (widget.minDate != null &&
+                              option.getDate().isBefore(widget.minDate!)) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Date cannot be before joining date.',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+                          _selectQuickDate(option.getDate());
+                        },
                       ),
                     ),
                   );
@@ -213,7 +248,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
       _currentMonth.month,
       1,
     );
-    final firstWeekdayOfMonth = firstDayOfMonth.weekday % 7; // 0-6, Sunday is 0
+    final firstWeekdayOfMonth = firstDayOfMonth.weekday % 7;
 
     final days = List<Widget>.generate(firstWeekdayOfMonth + daysInMonth, (
       index,
@@ -224,21 +259,30 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
       final day = index - firstWeekdayOfMonth + 1;
       final date = DateTime(_currentMonth.year, _currentMonth.month, day);
+
+      final bool isSelectable = _isDateSelectable(date);
+
       final isSelected =
           _selectedDate.year == date.year &&
           _selectedDate.month == date.month &&
           _selectedDate.day == date.day;
+
+      final now = DateTime.now();
       final isToday =
-          DateTime.now().year == date.year &&
-          DateTime.now().month == date.month &&
-          DateTime.now().day == date.day;
+          now.year == date.year &&
+          now.month == date.month &&
+          now.day == date.day &&
+          isSelectable;
 
       return GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedDate = date;
-          });
-        },
+        onTap:
+            isSelectable
+                ? () {
+                  setState(() {
+                    _selectedDate = date;
+                  });
+                }
+                : null,
         child: Container(
           width: 40,
           height: 40,
@@ -258,9 +302,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               day.toString(),
               style: TextStyle(
                 fontSize: 15,
-
                 color:
-                    isSelected
+                    !isSelectable
+                        ? AppColors.greyLight
+                        : isSelected
                         ? Colors.white
                         : isToday
                         ? AppColors.primary
@@ -281,12 +326,22 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     );
   }
 
- 
-
   void _selectQuickDate(DateTime date) {
     setState(() {
       _selectedDate = date;
       _currentMonth = DateTime(date.year, date.month);
     });
+  }
+
+  bool _isPreviousMonthNavigable() {
+    if (widget.minDate == null) return true;
+
+    final lastDayOfPreviousMonth = DateTime(
+      _currentMonth.year,
+      _currentMonth.month,
+      0,
+    );
+
+    return !lastDayOfPreviousMonth.isBefore(widget.minDate!);
   }
 }

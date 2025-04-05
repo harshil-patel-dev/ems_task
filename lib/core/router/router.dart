@@ -1,3 +1,4 @@
+import 'package:ems_task/core/models/employee_model.dart';
 import 'package:ems_task/core/router/app_routes.dart';
 import 'package:ems_task/core/router/view/error_route_view.dart';
 import 'package:ems_task/features/employee_details/employee_detail_form.dart';
@@ -41,6 +42,14 @@ class AppRouter {
         path: RouteNames.addEmployee,
         pageBuilder:
             (context, state) => MaterialPage(child: EmployeeDetailForm()),
+      ),
+      GoRoute(
+        name: RouteNames.editEmployee,
+        path: RouteNames.editEmployee,
+        builder: (context, state) {
+          final employee = state.extra as Employee;
+          return EmployeeDetailForm(employee: employee);
+        },
       ),
     ],
   );

@@ -2,21 +2,22 @@ import 'package:ems_task/core/themes/app_colors.dart';
 import 'package:ems_task/core/themes/app_styles.dart';
 import 'package:flutter/material.dart';
 
-class CustomTextFormField extends StatelessWidget {
+class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? label;
   final String? hint;
   final IconData? leadingIcon;
   final IconData? trailingIcon;
   final bool obscureText;
-  final String? Function(String?)? validator;
   final VoidCallback? onTap;
   final VoidCallback? onTrailingIconTap;
   final bool readOnly;
   final TextInputType? keyboardType;
   final int? maxLines;
+  final String? errorText;
+  final void Function(String)? onChanged;
 
-  const CustomTextFormField({
+  const CustomTextField({
     super.key,
     this.controller,
     this.label,
@@ -24,20 +25,21 @@ class CustomTextFormField extends StatelessWidget {
     this.leadingIcon,
     this.trailingIcon,
     this.obscureText = false,
-    this.validator,
     this.onTap,
     this.onTrailingIconTap,
     this.readOnly = false,
     this.keyboardType,
     this.maxLines = 1,
+    this.errorText,
+    this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    return TextField(
       controller: controller,
       obscureText: obscureText,
-      validator: validator,
+      onChanged: onChanged,
       onTap: onTap,
       readOnly: readOnly,
       keyboardType: keyboardType,
@@ -46,6 +48,7 @@ class CustomTextFormField extends StatelessWidget {
         labelText: label,
         hintText: hint,
         hintStyle: AppStyles.hintText(),
+        errorText: errorText,
         prefixIcon:
             leadingIcon != null
                 ? Icon(leadingIcon, color: AppColors.primary)
