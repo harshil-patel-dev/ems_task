@@ -105,7 +105,7 @@ class HomeScreen extends StatelessWidget {
 
             if ((state as EmployeeLoaded).currentEmployees.isEmpty)
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.2,
+                height: MediaQuery.of(context).size.height * 0.4,
                 child: Center(
                   child: Text(
                     AppStrings.noCurrEmpFoundText,
@@ -139,7 +139,7 @@ class HomeScreen extends StatelessWidget {
 
             if (state.previousEmployees.isEmpty)
               SizedBox(
-                height: MediaQuery.of(context).size.height * 0.2,
+                height: MediaQuery.of(context).size.height * 0.4,
                 child: Center(
                   child: Text(
                     AppStrings.noPrevEmpFoundText,

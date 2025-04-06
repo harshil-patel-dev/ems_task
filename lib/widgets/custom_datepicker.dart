@@ -52,123 +52,126 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Quick date options
-          if (widget.quickDateOptions != null &&
-              widget.quickDateOptions!.isNotEmpty) ...[
-            ..._buildQuickDateOptionsRows(),
-            const SizedBox(height: 16),
-          ],
-
-          // Month navigation
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                padding: EdgeInsets.zero,
-                icon: Icon(
-                  Icons.arrow_left_rounded,
-                  size: 36,
-                  color:
-                      _isPreviousMonthNavigable()
-                          ? AppColors.grey
-                          : AppColors.greyLight,
-                ),
-                onPressed:
-                    _isPreviousMonthNavigable()
-                        ? () {
-                          setState(() {
-                            _currentMonth = DateTime(
-                              _currentMonth.year,
-                              _currentMonth.month - 1,
-                            );
-                          });
-                        }
-                        : null,
-              ),
-              Text(
-                DateFormat('MMMM yyyy').format(_currentMonth),
-                style: AppStyles.title(),
-              ),
-              IconButton(
-                padding: EdgeInsets.zero,
-                icon: const Icon(
-                  Icons.arrow_right_rounded,
-                  size: 36,
-                  color: AppColors.grey,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _currentMonth = DateTime(
-                      _currentMonth.year,
-                      _currentMonth.month + 1,
-                    );
-                  });
-                },
-              ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Quick date options
+            if (widget.quickDateOptions != null &&
+                widget.quickDateOptions!.isNotEmpty) ...[
+              ..._buildQuickDateOptionsRows(),
+              const SizedBox(height: 16),
             ],
-          ),
 
-          // Weekday headers
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children:
-                  ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                      .map(
-                        (day) => SizedBox(
-                          width: 40,
-                          child: Text(day, textAlign: TextAlign.center),
-                        ),
-                      )
-                      .toList(),
-            ),
-          ),
-
-          // Calendar grid
-          _buildCalendarGrid(),
-
-          // Save and Cancel buttons
-          Container(
-            margin: const EdgeInsets.only(top: 16.0),
-            padding: const EdgeInsets.only(top: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(color: AppColors.greyLight, width: 1.0),
-              ),
-            ),
-            child: Row(
+            // Month navigation
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.calendar_today, color: Colors.blue),
-                const SizedBox(width: 8),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
+                    Icons.arrow_left_rounded,
+                    size: 36,
+                    color:
+                        _isPreviousMonthNavigable()
+                            ? AppColors.grey
+                            : AppColors.greyLight,
+                  ),
+                  onPressed:
+                      _isPreviousMonthNavigable()
+                          ? () {
+                            setState(() {
+                              _currentMonth = DateTime(
+                                _currentMonth.year,
+                                _currentMonth.month - 1,
+                              );
+                            });
+                          }
+                          : null,
+                ),
                 Text(
-                  DateFormat('d MMM yyyy').format(_selectedDate),
-                  style: const TextStyle(fontSize: 16),
+                  DateFormat('MMMM yyyy').format(_currentMonth),
+                  style: AppStyles.title(),
                 ),
-                const Spacer(),
-                CustomButton(
-                  type: ButtonType.secondary,
-                  text: AppStrings.cancel,
-                  onPressed: () => Navigator.pop(context),
-                ),
-                const SizedBox(width: 12),
-                CustomButton(
-                  type: ButtonType.primary,
-                  text: AppStrings.save,
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: const Icon(
+                    Icons.arrow_right_rounded,
+                    size: 36,
+                    color: AppColors.grey,
+                  ),
                   onPressed: () {
-                    widget.onDateSelected(_selectedDate);
-                    Navigator.pop(context);
+                    setState(() {
+                      _currentMonth = DateTime(
+                        _currentMonth.year,
+                        _currentMonth.month + 1,
+                      );
+                    });
                   },
                 ),
               ],
             ),
-          ),
-        ],
+
+            // Weekday headers
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children:
+                    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                        .map(
+                          (day) => SizedBox(
+                            width: 40,
+                            child: Text(day, textAlign: TextAlign.center),
+                          ),
+                        )
+                        .toList(),
+              ),
+            ),
+
+            // Calendar grid
+            _buildCalendarGrid(),
+
+            // Save and Cancel buttons
+            Container(
+              margin: const EdgeInsets.only(top: 16.0),
+              padding: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                border: Border(
+                  top: BorderSide(color: AppColors.greyLight, width: 1.0),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.calendar_today, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Text(
+                    DateFormat('d MMM yyyy').format(_selectedDate),
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const Spacer(),
+                  CustomButton(
+                    type: ButtonType.secondary,
+                    text: AppStrings.cancel,
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 12),
+                  CustomButton(
+                    type: ButtonType.primary,
+                    text: AppStrings.save,
+                    onPressed: () {
+                      widget.onDateSelected(_selectedDate);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

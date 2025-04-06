@@ -72,6 +72,48 @@ class _EmployeeDetailFormState extends State<EmployeeDetailForm> {
               ),
               automaticallyImplyLeading: false,
               centerTitle: false,
+              actions: [
+                if (state.isEditing)
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline_outlined,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Delete Employee'),
+                            content: Text(
+                              'Are you sure you want to delete this employee?',
+                            ),
+                            actions: [
+                              CustomButton(
+                                type: ButtonType.secondary,
+                                onPressed: () => Navigator.pop(context),
+                                text: AppStrings.cancel,
+                              ),
+                              CustomButton(
+                                type: ButtonType.primary,
+                                onPressed: () {
+                                  context.read<HomeBloc>().add(
+                                    DeleteEmployee(
+                                      empID: state.employeeId ?? '',
+                                    ),
+                                  );
+                                  context.goNamed(RouteNames.home);
+                                },
+                                text: 'Delete',
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+              ],
             ),
             body: SafeArea(
               child: Padding(
@@ -189,7 +231,7 @@ class _EmployeeDetailFormState extends State<EmployeeDetailForm> {
                           ),
                         ),
                         const SizedBox(width: 16),
-                        Icon(Icons.arrow_forward),
+                        Icon(Icons.arrow_forward, color: AppColors.primary),
                         const SizedBox(width: 16),
                         Expanded(
                           child: CustomTextField(
@@ -312,6 +354,8 @@ class _EmployeeDetailFormState extends State<EmployeeDetailForm> {
       context: context,
       builder: (BuildContext context) {
         return Dialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: 20),
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

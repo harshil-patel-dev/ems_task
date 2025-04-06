@@ -22,7 +22,12 @@ class CustomButton extends StatelessWidget {
       onPressed: onPressed,
       color: _getButtonColor(context),
       shape: _getButtonShape(),
-      padding: EdgeInsets.zero,
+      padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.of(context).size.width * 0.05,
+        vertical: 12,
+      ),
+      minWidth: 0,
+      height: 0,
       elevation: 0,
       hoverElevation: 0,
       focusElevation: 0,
